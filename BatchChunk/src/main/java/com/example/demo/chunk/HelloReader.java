@@ -18,6 +18,7 @@ public class HelloReader implements ItemReader<String> {
 	private String[] input = {"Hello","World","hoge","fuga",null,"The World"};
 	private int index = 0;
 	
+	//readerがnullを返すと、stepは終了する
 	@Override
 	public String read() throws Exception, UnexpectedException,ParseException,NonTransientResourceException{
 		String message = input[index++];

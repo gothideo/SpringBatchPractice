@@ -2,7 +2,9 @@ package com.example.demo.config;
 
 
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+// ChunkでListenerの設定を行っているが、Taskletも同様に設定可能
 @Configuration
 @EnableBatchProcessing
 public class BatchConfig {
@@ -33,14 +36,23 @@ public class BatchConfig {
 	@Autowired
 	private ItemWriter<String> writer;
 	
+	@Autowired
+	private JobExecutionListener jobListner;
+	
+	@Autowired
+	private StepExecutionListener stepListener;
+	
 	@Bean
 	public Step chunkStep() {
-		return stepBuilderFactory.get("HelloChunStep").<String,String>chunk(1).reader(reader).processor(processor).writer(writer).build();
+		return stepBuilderFactory.get("HelloChunkStep").<String,String>chunk(1)
+				.reader(reader).processor(processor).writer(writer)
+				.listener(stepListener).build();
 	}
 	
 	@Bean
 	public Job chunkJob() throws Exception{
-		return jobBuilderFactory.get("HelloWorldChunkJob").incrementer(new RunIdIncrementer()).start(chunkStep()).build();
+		return jobBuilderFactory.get("HelloWorldChunkJob").incrementer(new RunIdIncrementer())
+				.start(chunkStep()).listener(jobListner).build();
 	}
 
 }
